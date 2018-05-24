@@ -6,6 +6,7 @@
 
 # Libraries
 library(cluster)
+library(NLP)
 
 # Set Working Directory
 setwd("/Users/thiagom/Documents/Studies/Unicamp/MDC/INF-613/Tarefas/Final/INF0613_Trabalho_Final")
@@ -32,14 +33,19 @@ summary(features.pca)
 PC <- 1654
 dados <- features.pca$x[,1:PC]
 
+# Calculate distance Matrix for the data
+d <- dist(dados)
+
 # Run k-means and k-medoids for the data (5, 10, 15, 20 clusters)
 set.seed(123)
-rows <- nrow(dados)
-amostra <- dados[sample(rows, rows*0.25),]
-#features.kmeans <- kmeans(dados, 5)
-amostra.kmeans <- kmeans(amostra, 5)
+features.kmeans <- kmeans(dados, 5)
 
 # Calculatte Silhouette Coeficient 
-#features.silhouette <- silhouette(features.kmeans$cluster, dados)
-#summary(features.silhouette)$avg.width
-amostra.silhouette <- silhouette(amostra.kmeans$cluster, amostra)
+features.silhouette <- silhouette(features.kmeans$cluster, d)
+
+# Calculate the bi-grams using NLP's ngrams method
+bigramas <- list()
+for (cl in c(1:5)) {
+  words <- colnames(features)[features.kmeans$cluster == cl]
+  bigramas[[cl]] <- ngrams(words, 2)
+}
